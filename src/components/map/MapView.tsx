@@ -47,7 +47,13 @@ export function MapView() {
                 url={bm.url}
                 attribution={bm.attribution}
                 maxZoom={bm.maxZoom ?? 19}
-                subdomains={bm.subdomains}
+                // IMPORTANTE: nunca pasar subdomains={undefined} explícitamente.
+                // Leaflet siempre calcula un subdominio internamente (aunque la
+                // URL no tenga {s}) y options.subdomains=undefined pisa su
+                // default interno 'abc', provocando "Cannot read properties of
+                // undefined (reading 'length')" en _getSubdomain. Por eso el
+                // prop solo se incluye cuando bm.subdomains está definido.
+                {...(bm.subdomains ? { subdomains: bm.subdomains } : {})}
               />
             </LayersControl.BaseLayer>
           ))
