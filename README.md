@@ -6,8 +6,8 @@ Aplicación web moderna para visualizar, analizar y comparar archivos **GPX** so
 
 ## ✨ Características
 
-- 🗺️ **Mapa interactivo** centrado en España, con control de capas: OpenStreetMap, IGN (mapa base y ortofoto PNOA), Google Maps (roadmap / satélite / terreno / híbrido) y OpenTopoMap.
-- 🌓 **Tema oscuro** por defecto, diseño minimalista tipo "cartografía nocturna".
+- 🗺️ **Mapa interactivo** centrado en España, con control de capas: OpenStreetMap (por defecto), Oscuro (CARTO), IGN (mapa base + ortofoto PNOA), Google Maps y Google Satélite.
+- 🌓 **Interfaz en tema oscuro** por defecto (sidebar, controles, tarjetas); el mapa arranca con OpenStreetMap y se puede cambiar a la variante oscura desde el selector de capas.
 - 📂 **Carga de GPX** por botón o *drag & drop*, con soporte para **múltiples archivos** superpuestos.
 - 🎨 **Personalización de estilo** por track: color, grosor (1–12px), opacidad y visibilidad de puntos.
 - 📊 **Cards de estadísticas**: distancia, duración, velocidad media y en movimiento, ascenso/descenso acumulado, elevación mín/máx, fecha y nombre de la ruta.
@@ -94,12 +94,20 @@ git push -u origin main
 
 ## 🗺️ Sobre las capas de mapa
 
-- **OpenStreetMap** y **OpenStreetMap oscuro (CARTO)**: uso libre, sin necesidad de clave.
-- **IGN España**: se usan los servicios WMTS públicos del Instituto Geográfico Nacional (`www.ign.es/wmts/...`), sin necesidad de API key. Sujetos a los términos de uso del IGN.
-- **Google Maps** (roadmap / satélite / terreno / híbrido): se usan los endpoints de tiles públicos (`mt0-3.google.com/vt/...`). Esto es habitual en proyectos de demostración, pero **no es la vía oficialmente soportada por Google** para producción; para un uso comercial/production-grade deberías migrar a la [Google Maps Platform API](https://developers.google.com/maps) con tu propia API key.
-- **OpenTopoMap**: capa de relieve/topográfica de uso libre con atribución.
+- **OpenStreetMap** — capa por defecto.
+- **Oscuro (CARTO)** — variante oscura de OSM.
+- **IGN Mapa Base** — WMTS oficial del IGN (`ign-base`, capa `IGNBaseTodo`).
+- **IGN Ortofoto (PNOA)** — WMTS oficial del IGN (`pnoa-ma`, capa `OI.OrthoimageCoverage`).
+- **Google Maps** y **Google Satélite** — tiles públicos de Google (`/vt/lyrs=...`).
 
-Puedes añadir fácilmente Thunderforest o Stadia Maps añadiendo una entrada más en `src/lib/constants/basemaps.ts` (requieren API key gratuita).
+> **Historial de este apartado — bugs reales encontrados y corregidos:**
+> 1. **Google no se mostraba**: los subdominios se pasaban como el string `"mt0,mt1,mt2,mt3"`. Leaflet no separa por comas — trata un string de subdominios como una lista de caracteres sueltos (`"abc"` → `a`, `b`, `c`), así que ese valor generaba URLs inválidas como `m.google.com`, `t.google.com`... Corregido pasándolo como array: `["mt0", "mt1", "mt2", "mt3"]`.
+> 2. **IGN no se mostraba**: los nombres de los parámetros de la query WMTS (`TileMatrixSet`, `TileMatrix`, `TileRow`, `TileCol`) estaban en camelCase. El servidor del IGN los requiere en **minúsculas** (`tilematrixset`, `tilematrix`, `tilerow`, `tilecol`) — los *valores* sí conservan su capitalización exacta (`GetTile`, `IGNBaseTodo`, `GoogleMapsCompatible`...). Confirmado contra el proveedor oficial `IGNBase.Todo` de [leaflet-providersESP / mapSpain](https://dieghernan.github.io/leaflet-providersESP/).
+> 3. **El selector de capas no estaba conectado al estado global**: `MapView` solo usaba el estado interno de `<LayersControl.BaseLayer>`, sin sincronizarlo con `basemapId`/`setBasemap` del store de Zustand. Se añadió `BasemapSync` (`src/components/map/BasemapSync.tsx`), que escucha el evento `baselayerchange` de Leaflet y actualiza el store; y la capa marcada como `checked` ahora lee `basemapId` del store en vez de un valor fijo.
+>
+> Ten en cuenta que los tiles de **Google** vía `/vt/lyrs=...` son un endpoint no documentado oficialmente por Google — funciona en la práctica en proyectos personales/demo, pero para uso comercial o de alto tráfico lo recomendable es migrar a [Google Maps Platform](https://developers.google.com/maps) con tu propia clave. **IGN** es un servicio público gubernamental: puede tener cortes puntuales de mantenimiento.
+
+Puedes añadir fácilmente Thunderforest o Stadia Maps con una entrada más en `src/lib/constants/basemaps.ts` (requieren API key gratuita).
 
 ## 🧩 Extender la app
 
