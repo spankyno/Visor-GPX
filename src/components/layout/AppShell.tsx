@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import { useState } from "react";
 import { Header } from "./Header";
+import { Footer } from "./Footer";
 import { Sidebar } from "@/components/sidebar/Sidebar";
 import { GpxUploader } from "@/components/upload/GpxUploader";
 import { ErrorToast } from "./ErrorToast";
@@ -46,11 +47,11 @@ export function AppShell() {
           <Sidebar />
         </aside>
 
-        {/* Panel lateral — móvil (bottom sheet) */}
+        {/* Panel lateral — móvil (bottom sheet), desplazado por encima del footer */}
         {trackCount > 0 && (
           <div
             className={cn(
-              "fixed inset-x-0 bottom-0 z-[1250] max-h-[75dvh] rounded-t-2xl border-t border-neutral-800 bg-neutral-950 shadow-2xl transition-transform duration-300 lg:hidden",
+              "fixed inset-x-0 bottom-9 z-[1250] max-h-[70dvh] rounded-t-2xl border-t border-neutral-800 bg-neutral-950 shadow-2xl transition-transform duration-300 lg:hidden",
               sidebarOpen ? "translate-y-0" : "translate-y-[calc(100%-3.25rem)]"
             )}
           >
@@ -61,13 +62,14 @@ export function AppShell() {
             >
               <span className="h-1.5 w-10 rounded-full bg-neutral-700" />
             </button>
-            <div className="h-[calc(75dvh-2rem)]">
+            <div className="h-[calc(70dvh-2rem)]">
               <Sidebar />
             </div>
           </div>
         )}
       </div>
 
+      <Footer />
       <ErrorToast />
       <LoadingOverlay />
     </div>

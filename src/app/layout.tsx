@@ -1,6 +1,15 @@
 import type { Metadata, Viewport } from "next";
 import { Fraunces, JetBrains_Mono, Manrope } from "next/font/google";
 import { ServiceWorkerRegister } from "@/components/layout/ServiceWorkerRegister";
+import { JsonLd } from "@/components/layout/JsonLd";
+import {
+  AUTHOR_NAME,
+  GOOGLE_SITE_VERIFICATION,
+  SITE_DESCRIPTION,
+  SITE_NAME,
+  SITE_TITLE,
+  SITE_URL,
+} from "@/lib/constants/site";
 import "./globals.css";
 
 const fraunces = Fraunces({
@@ -23,15 +32,64 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Visor GPX — Explora tus rutas GPS",
-  description:
-    "Visualiza, analiza y compara archivos GPX sobre mapas de España con perfil de elevación, animación de reproducción y estadísticas detalladas.",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: SITE_TITLE,
+    template: `%s | ${SITE_NAME}`,
+  },
+  description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
+  authors: [{ name: AUTHOR_NAME, url: "https://aitorsanchez.pages.dev" }],
+  creator: AUTHOR_NAME,
+  publisher: AUTHOR_NAME,
+  keywords: [
+    "visor gpx",
+    "visualizar gpx online",
+    "gpx viewer",
+    "rutas gps",
+    "perfil de elevación",
+    "mapa ign",
+    "senderismo gpx",
+    "ciclismo gpx",
+    "analizar ruta gpx",
+    "convertir gpx a geojson",
+  ],
   manifest: "/manifest.webmanifest",
-  applicationName: "Visor GPX",
+  alternates: {
+    canonical: "/",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true },
+  },
+  verification: {
+    google: GOOGLE_SITE_VERIFICATION,
+  },
+  icons: {
+    icon: [{ url: "/favicon.svg", type: "image/svg+xml" }],
+    shortcut: ["/favicon.svg"],
+    apple: [{ url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" }],
+  },
+  openGraph: {
+    type: "website",
+    locale: "es_ES",
+    url: SITE_URL,
+    siteName: SITE_NAME,
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: SITE_NAME }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    images: ["/og-image.png"],
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Visor GPX",
+    title: SITE_NAME,
   },
 };
 
@@ -54,6 +112,7 @@ export default function RootLayout({
       >
         {children}
         <ServiceWorkerRegister />
+        <JsonLd />
       </body>
     </html>
   );

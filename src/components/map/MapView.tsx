@@ -11,6 +11,7 @@ import { BasemapSync, basemapLabel } from "./BasemapSync";
 
 export function MapView() {
   const tracks = useTracksStore((s) => s.tracks);
+  const activeTrackId = useTracksStore((s) => s.activeTrackId);
   // Capa base activa: viene del store (persistida entre cambios de capa),
   // en vez de un valor fijo desconectado del resto de la app.
   const basemapId = useTracksStore((s) => s.basemapId);
@@ -61,7 +62,7 @@ export function MapView() {
       </LayersControl>
 
       <BasemapSync />
-      <FitBoundsController tracks={tracks} />
+      <FitBoundsController tracks={tracks} activeTrackId={activeTrackId} />
 
       {tracks.map((track) => (
         <TrackLayer key={track.id} track={track} />
