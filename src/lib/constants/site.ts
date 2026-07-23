@@ -14,4 +14,4 @@ export const AUTHOR_CONTACT_URL = "https://aitor-blog-contacto.vercel.app";
 /** URL de contacto usada específicamente en el structured data (JSON-LD) */
 export const AUTHOR_CONTACT_JSONLD_URL = "https://aitorsanchez.pages.dev/contacto";
 
-export const GOOGLE_SITE_VERIFICATION = "fK2gZcSYwHHPqDFWdIB5WD1eVONqa6kwIFqkRDRyX4g";
+export const GOOGLE_SITE_VERIFICATION = "MEiDmnJOvnWITHUi0HCLxuoulOEm0oTM4fwQMugxoyY";
