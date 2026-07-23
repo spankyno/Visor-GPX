@@ -38,11 +38,11 @@ export const BASEMAPS: BasemapDef[] = [
     id: "ign-base",
     name: "IGN Mapa Base",
     group: "España (IGN)",
-    // IMPORTANTE: los NOMBRES de parámetro van en minúsculas (tilematrixset,
-    // tilematrix, tilerow, tilecol...). Los VALORES sí conservan su case exacto
-    // (GetTile, IGNBaseTodo, GoogleMapsCompatible...). Confirmado contra el
-    // proveedor oficial "IGNBase.Todo" de leaflet-providersESP / mapSpain.
-    url: "https://www.ign.es/wmts/ign-base?service=WMTS&request=GetTile&version=1.0.0&layer=IGNBaseTodo&style=default&format=image/png&tilematrixset=GoogleMapsCompatible&tilematrix={z}&tilerow={y}&tilecol={x}",
+    // Servido a través de nuestro propio proxy (/api/ign-tile) en vez de pedirlo
+    // directamente al IGN desde el navegador: el GetTile del IGN devuelve 400
+    // sin un Referer propio, mientras que GetCapabilities sí responde sin él.
+    // Ver src/app/api/ign-tile/[layer]/[z]/[x]/[y]/route.ts.
+    url: "/api/ign-tile/base/{z}/{x}/{y}",
     attribution: "CC BY 4.0 scne.es &middot; Instituto Geográfico Nacional (IGN)",
     maxZoom: 20,
   },
@@ -50,7 +50,7 @@ export const BASEMAPS: BasemapDef[] = [
     id: "ign-pnoa",
     name: "IGN Ortofoto (PNOA)",
     group: "España (IGN)",
-    url: "https://www.ign.es/wmts/pnoa-ma?service=WMTS&request=GetTile&version=1.0.0&layer=OI.OrthoimageCoverage&style=default&format=image/jpeg&tilematrixset=GoogleMapsCompatible&tilematrix={z}&tilerow={y}&tilecol={x}",
+    url: "/api/ign-tile/pnoa/{z}/{x}/{y}",
     attribution: "CC BY 4.0 scne.es &middot; Instituto Geográfico Nacional (IGN) - PNOA",
     maxZoom: 19,
   },
