@@ -1,7 +1,7 @@
 export interface BasemapDef {
   id: string;
   name: string;
-  group: "Estándar" | "España (IGN)" | "Google" | "Relieve";
+  group: "Estándar" | "España (IGN)" | "Google";
   url: string;
   attribution: string;
   maxZoom?: number;
@@ -38,20 +38,20 @@ export const BASEMAPS: BasemapDef[] = [
     id: "ign-base",
     name: "IGN Mapa Base",
     group: "España (IGN)",
-    // Endpoint WMTS oficial y vigente del IGN (IGNBaseTodo), verificado a través
-    // del proveedor "IGNBase.Todo" del paquete rOpenSpain/mapSpain.
-    url: "https://www.ign.es/wmts/ign-base?service=WMTS&request=GetTile&version=1.0.0&layer=IGNBaseTodo&style=default&format=image/png&TileMatrixSet=GoogleMapsCompatible&TileMatrix={z}&TileRow={y}&TileCol={x}",
-    attribution:
-      "CC BY 4.0 scne.es &middot; Instituto Geográfico Nacional (IGN)",
+    // IMPORTANTE: los NOMBRES de parámetro van en minúsculas (tilematrixset,
+    // tilematrix, tilerow, tilecol...). Los VALORES sí conservan su case exacto
+    // (GetTile, IGNBaseTodo, GoogleMapsCompatible...). Confirmado contra el
+    // proveedor oficial "IGNBase.Todo" de leaflet-providersESP / mapSpain.
+    url: "https://www.ign.es/wmts/ign-base?service=WMTS&request=GetTile&version=1.0.0&layer=IGNBaseTodo&style=default&format=image/png&tilematrixset=GoogleMapsCompatible&tilematrix={z}&tilerow={y}&tilecol={x}",
+    attribution: "CC BY 4.0 scne.es &middot; Instituto Geográfico Nacional (IGN)",
     maxZoom: 20,
   },
   {
     id: "ign-pnoa",
     name: "IGN Ortofoto (PNOA)",
     group: "España (IGN)",
-    url: "https://www.ign.es/wmts/pnoa-ma?service=WMTS&request=GetTile&version=1.0.0&layer=OI.OrthoimageCoverage&style=default&format=image/jpeg&TileMatrixSet=GoogleMapsCompatible&TileMatrix={z}&TileRow={y}&TileCol={x}",
-    attribution:
-      "CC BY 4.0 scne.es &middot; Instituto Geográfico Nacional (IGN) - PNOA",
+    url: "https://www.ign.es/wmts/pnoa-ma?service=WMTS&request=GetTile&version=1.0.0&layer=OI.OrthoimageCoverage&style=default&format=image/jpeg&tilematrixset=GoogleMapsCompatible&tilematrix={z}&tilerow={y}&tilecol={x}",
+    attribution: "CC BY 4.0 scne.es &middot; Instituto Geográfico Nacional (IGN) - PNOA",
     maxZoom: 19,
   },
   {
@@ -61,7 +61,6 @@ export const BASEMAPS: BasemapDef[] = [
     url: "https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}",
     attribution: "&copy; Google",
     maxZoom: 20,
-    // Array, NO string separado por comas (ver nota en la interfaz).
     subdomains: ["mt0", "mt1", "mt2", "mt3"],
   },
   {
@@ -73,18 +72,9 @@ export const BASEMAPS: BasemapDef[] = [
     maxZoom: 20,
     subdomains: ["mt0", "mt1", "mt2", "mt3"],
   },
-  {
-    id: "opentopo",
-    name: "OpenTopoMap (relieve)",
-    group: "Relieve",
-    url: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
-    attribution: '&copy; OpenTopoMap (CC-BY-SA) &copy; OpenStreetMap',
-    maxZoom: 17,
-    subdomains: "abc",
-  },
 ];
 
-export const DEFAULT_BASEMAP_ID = "carto-dark";
+export const DEFAULT_BASEMAP_ID = "osm";
 
 export const SPAIN_CENTER: [number, number] = [40.2, -3.7];
 export const SPAIN_ZOOM = 6;

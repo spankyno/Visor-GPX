@@ -7,9 +7,13 @@ import { BASEMAPS, SPAIN_CENTER, SPAIN_ZOOM } from "@/lib/constants/basemaps";
 import { useTracksStore } from "@/lib/store/useTracksStore";
 import { TrackLayer } from "./TrackLayer";
 import { FitBoundsController } from "./FitBoundsController";
+import { BasemapSync, basemapLabel } from "./BasemapSync";
 
 export function MapView() {
   const tracks = useTracksStore((s) => s.tracks);
+  // Capa base activa: viene del store (persistida entre cambios de capa),
+  // en vez de un valor fijo desconectado del resto de la app.
+  const basemapId = useTracksStore((s) => s.basemapId);
 
   const groupedBasemaps = useMemo(() => {
     const groups = new Map<string, typeof BASEMAPS>();
@@ -32,12 +36,12 @@ export function MapView() {
       <ZoomControl position="bottomright" />
 
       <LayersControl position="topright">
-        {Array.from(groupedBasemaps.entries()).map(([group, basemaps]) =>
+        {Array.from(groupedBasemaps.entries()).map(([, basemaps]) =>
           basemaps.map((bm) => (
             <LayersControl.BaseLayer
               key={bm.id}
-              name={`${group === "Estándar" ? "" : `${group} · `}${bm.name}`}
-              checked={bm.id === "carto-dark"}
+              name={basemapLabel(bm)}
+              checked={bm.id === basemapId}
             >
               <TileLayer
                 url={bm.url}
@@ -50,6 +54,7 @@ export function MapView() {
         )}
       </LayersControl>
 
+      <BasemapSync />
       <FitBoundsController tracks={tracks} />
 
       {tracks.map((track) => (
