@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import Script from "next/script";
 import { Fraunces, JetBrains_Mono, Manrope } from "next/font/google";
 import { ServiceWorkerRegister } from "@/components/layout/ServiceWorkerRegister";
 import { JsonLd } from "@/components/layout/JsonLd";
@@ -113,6 +114,14 @@ export default function RootLayout({
         {children}
         <ServiceWorkerRegister />
         <JsonLd />
+
+        {/* Script de Aitor's Analytics */}
+        <Script
+          src="https://aitors-hub-dashboard.asanchezgu.workers.dev/tracker.js"
+          data-app="visor-varios-gpx"
+          data-key="ak_932ebf9cd50a488f9fec6e6ee6400bab"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );
