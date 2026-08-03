@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
+import { ClerkProvider } from "@clerk/nextjs";
+import { esES } from "@clerk/localizations";
 import { Fraunces, JetBrains_Mono, Manrope } from "next/font/google";
 import { ServiceWorkerRegister } from "@/components/layout/ServiceWorkerRegister";
 import { JsonLd } from "@/components/layout/JsonLd";
@@ -107,22 +109,36 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className="dark">
-      <body
-        className={`${fraunces.variable} ${manrope.variable} ${jetbrainsMono.variable} font-sans antialiased`}
-      >
-        {children}
-        <ServiceWorkerRegister />
-        <JsonLd />
+    <ClerkProvider
+      localization={esES}
+      appearance={{
+        variables: {
+          colorPrimary: "#f59e0b",
+          colorBackground: "#0a0a0a",
+          colorInputBackground: "#171717",
+          colorText: "#e5e5e5",
+          colorTextSecondary: "#a3a3a3",
+          borderRadius: "0.75rem",
+        },
+      }}
+    >
+      <html lang="es" className="dark">
+        <body
+          className={`${fraunces.variable} ${manrope.variable} ${jetbrainsMono.variable} font-sans antialiased`}
+        >
+          {children}
+          <ServiceWorkerRegister />
+          <JsonLd />
 
-        {/* Script de Aitor's Analytics */}
-        <Script
-          src="https://aitors-hub-dashboard.asanchezgu.workers.dev/tracker.js"
-          data-app="visor-varios-gpx"
-          data-key="ak_932ebf9cd50a488f9fec6e6ee6400bab"
-          strategy="afterInteractive"
-        />
-      </body>
-    </html>
+          {/* Script de Aitor's Analytics */}
+          <Script
+            src="https://aitors-hub-dashboard.asanchezgu.workers.dev/tracker.js"
+            data-app="visor-varios-gpx"
+            data-key="ak_932ebf9cd50a488f9fec6e6ee6400bab"
+            strategy="afterInteractive"
+          />
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }

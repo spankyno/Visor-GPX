@@ -16,11 +16,46 @@ Aplicación web moderna para visualizar, analizar y comparar archivos **GPX** so
 - 📍 **Waypoints** del GPX mostrados como marcadores con nombre y descripción.
 - 📋 **Gestor de rutas**: mostrar/ocultar/eliminar cada track cargada; al seleccionar una, el mapa hace zoom automáticamente a esa ruta.
 - ⬇️ **Exportación** a GPX y GeoJSON.
+- 👤 **Cuentas de usuario (Clerk)** con tres planes — ver sección [Planes de usuario](#-planes-de-usuario-y-almacenamiento) más abajo.
+- 💾 **Guardado de rutas en la nube** (Supabase) para usuarios registrados y Pro, accesibles desde cualquier dispositivo en `/mis-rutas`.
+- 🔗 **Compartición por URL** (solo plan Pro): genera un enlace público de solo lectura con el mapa (OpenStreetMap) y la ruta, sin que quien lo abra necesite cuenta.
 - 📱 **100% responsive**: panel lateral fijo en escritorio, *bottom sheet* deslizable en móvil.
 - ⚡ **PWA instalable**, con manifest y *service worker* para el shell de la app.
 - 🔍 **SEO completo**: metadata (título/descripción orientados a palabras clave), Open Graph, Twitter Cards, JSON-LD (schema.org), `robots.txt` y `sitemap.xml` dinámicos, verificación de Google Search Console.
-- 🧾 **Footer** con copyright, autor y enlaces a contacto/blog/otras apps.
+- 🧾 **Footer** con copyright, autor y enlaces a Acerca de/contacto/blog/otras apps.
 - 🧯 Estados de carga y error amigables.
+
+## 👥 Planes de usuario y almacenamiento
+
+La app tiene tres niveles, gestionados con [Clerk](https://clerk.com):
+
+| Plan | Cómo se obtiene | Ver rutas a la vez | Guardar en la nube | Compartir por URL |
+|---|---|---|---|---|
+| **Sin registro** | Ninguna acción | Hasta 3 | ❌ | ❌ |
+| **Registrado** | Crear una cuenta gratis | Ilimitadas | Hasta 10 archivos | ❌ |
+| **Pro** | A solicitud al autor de la app | Ilimitadas | Ilimitados | ✅ |
+
+- El plan **Pro no se autoconcede**: se activa a mano fijando `publicMetadata: { "plan": "pro" }` en el usuario correspondiente, desde el [dashboard de Clerk](https://dashboard.clerk.com) → *Users* → el usuario → *Metadata*. Cualquier usuario autenticado sin ese campo se trata como plan **Registrado**.
+- Los usuarios sin registro nunca escriben nada en el servidor: la carga de hasta 3 GPX en el visor ocurre solo en su navegador, exactamente igual que en la versión original de la app.
+- El almacenamiento de los GPX guardados usa [Supabase](https://supabase.com) (plan gratuito): el contenido del archivo se guarda como texto en una tabla de Postgres (`gpx_files`), junto con sus metadatos y, si procede, el token de compartición. No se usa Supabase Storage porque un GPX es XML de texto y pesa poco — cientos de rutas caben de sobra en los 500 MB del plan gratuito, y así evitamos gestionar buckets y URLs firmadas por separado.
+- La autorización (quién puede leer/borrar/compartir cada archivo) la comprueba siempre nuestro propio backend a partir del `userId` de Clerk — no se usa Row Level Security de Supabase, así que la *service role key* de Supabase nunca debe usarse desde el navegador.
+
+### Configuración de Clerk y Supabase
+
+1. Crea un proyecto en [Clerk](https://dashboard.clerk.com) y copia `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` y `CLERK_SECRET_KEY` desde *API Keys*.
+2. Crea un proyecto en [Supabase](https://supabase.com/dashboard), abre el *SQL Editor* y ejecuta el contenido de [`supabase/schema.sql`](./supabase/schema.sql) para crear la tabla `gpx_files`.
+3. Copia `SUPABASE_URL` y la `service_role` key (⚠️ no la `anon` key) desde *Project Settings → API*.
+4. Copia `.env.example` a `.env.local` y rellena las cuatro variables:
+
+   ```bash
+   cp .env.example .env.local
+   ```
+
+5. En Vercel, añade esas mismas variables en *Project Settings → Environment Variables* antes de desplegar.
+
+> **Nota:** el proyecto gratuito de Supabase se pausa automáticamente tras 7 días sin actividad (se reactiva con un clic desde su dashboard). Para una app con tráfico regular no debería llegar a pausarse.
+
+
 
 ## 🛠️ Stack técnico
 
@@ -31,6 +66,8 @@ Aplicación web moderna para visualizar, analizar y comparar archivos **GPX** so
 | Mapa | [Leaflet](https://leafletjs.com) + [React-Leaflet](https://react-leaflet.js.org) |
 | Gráficos | [Recharts](https://recharts.org) |
 | Estado global | [Zustand](https://zustand-demo.pmnd.rs) |
+| Autenticación y planes | [Clerk](https://clerk.com) |
+| Base de datos (rutas guardadas) | [Supabase](https://supabase.com) (Postgres) |
 | Iconos | [Lucide](https://lucide.dev) |
 | Despliegue | [Vercel](https://vercel.com) |
 
@@ -39,17 +76,30 @@ Aplicación web moderna para visualizar, analizar y comparar archivos **GPX** so
 ```
 src/
 ├── app/                      # App Router (layout, página principal, metadata/PWA)
+│   ├── acerca-de/            # Página "Acerca de" (app + planes de usuario)
+│   ├── mis-rutas/            # Dashboard de rutas guardadas (registrado/pro)
+│   ├── compartir/[token]/    # Visor público de solo lectura de una ruta compartida (pro)
+│   ├── sign-in/, sign-up/    # Páginas de autenticación de Clerk
+│   └── api/
+│       ├── gpx/              # CRUD de archivos guardados (requiere sesión)
+│       └── share/[token]/    # Lectura pública de una ruta compartida
 ├── components/
 │   ├── layout/               # AppShell, Header, overlays de error/carga, SW register
-│   ├── map/                  # MapView, capas de track, iconos, fitBounds
-│   ├── sidebar/              # Lista de tracks, stats, perfil elevación, estilo, playback, export
+│   ├── map/                  # MapView, ShareMapView, capas de track, iconos, fitBounds
+│   ├── sidebar/              # Lista de tracks, stats, perfil elevación, estilo, playback, export, guardar/compartir
 │   ├── upload/                # Selector / drag&drop de archivos GPX
 │   └── ui/                   # Primitivas (button, card, slider, switch, tabs)
 └── lib/
-    ├── gpx/                  # types, parser, stats (Haversine, elevación), export GPX/GeoJSON
+    ├── gpx/                  # types, parser, stats (Haversine, elevación), export GPX/GeoJSON, acceso a Supabase
     ├── store/                 # useTracksStore (Zustand)
-    ├── constants/             # Definición de capas base (basemaps)
+    ├── supabase/              # Cliente de Supabase (solo servidor, service role key)
+    ├── auth/                  # Helper para leer el usuario/plan actual de Clerk
+    ├── plans.ts               # Definición de los 3 planes y sus límites
+    ├── constants/             # Definición de capas base (basemaps), datos del sitio
     └── utils.ts               # Helpers de formato (fecha, distancia, duración...)
+
+supabase/
+└── schema.sql                 # Esquema de la tabla gpx_files (ejecutar una vez en Supabase)
 ```
 
 El código está organizado por dominio para que sea fácil extender: por ejemplo, añadir una nueva capa base es una línea en `lib/constants/basemaps.ts`, y añadir una nueva estadística es un ítem más en `StatsCards.tsx`.
@@ -78,8 +128,9 @@ npm run lint    # ESLint
 
 1. Sube este repositorio a GitHub (ver sección siguiente).
 2. En [vercel.com/new](https://vercel.com/new), importa el repositorio.
-3. Framework detectado automáticamente: **Next.js**. No se necesitan variables de entorno.
-4. Deploy 🚀.
+3. Framework detectado automáticamente: **Next.js**.
+4. Añade las 4 variables de entorno de Clerk y Supabase (ver [Configuración de Clerk y Supabase](#configuración-de-clerk-y-supabase) más arriba) en *Environment Variables*.
+5. Deploy 🚀.
 
 > **Nota de red:** las fuentes (Fraunces, Manrope, JetBrains Mono) se cargan mediante `next/font/google`, que las descarga y auto-hospeda **en tiempo de build**. Esto requiere que el entorno de build tenga acceso a `fonts.googleapis.com` / `fonts.gstatic.com` — Vercel lo tiene por defecto.
 
@@ -139,6 +190,9 @@ Con esa información concreta puedo ajustar el proxy con precisión, en vez de s
 - **Nueva estadística:** añade un `StatItem` en `src/components/sidebar/StatsCards.tsx` y, si hace falta, el cálculo correspondiente en `src/lib/gpx/stats.ts`.
 - **Nuevo formato de exportación:** añade una función en `src/lib/gpx/export.ts` y un botón en `ExportButtons.tsx`.
 - **Edición de tracks:** el store (`useTracksStore`) ya expone `updateTrackStyle`, fácil de ampliar para edición de puntos/waypoints.
+- **Cambiar los límites de los planes:** edita las constantes `ANONYMOUS_MAX_TRACKS` y `REGISTERED_MAX_FILES` en `src/lib/plans.ts`.
+- **Marcar a un usuario como Pro:** dashboard de Clerk → *Users* → el usuario → *Metadata* → *Public metadata* → `{ "plan": "pro" }`.
+- **Migrar a Supabase Storage:** si en el futuro los GPX crecen mucho, se puede sustituir la columna `content` de `gpx_files` por un `storage_path` a un bucket de Supabase Storage sin tocar el resto de la app — la única pieza a cambiar es `src/lib/gpx/store-server.ts`.
 
 ## 📄 Licencia
 
