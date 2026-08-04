@@ -84,6 +84,22 @@ export async function deleteUserFile(userId: string, id: string): Promise<void> 
   if (error) throw error;
 }
 
+export async function renameUserFile(
+  userId: string,
+  id: string,
+  trackName: string
+): Promise<GpxFileMeta | null> {
+  const { data, error } = await supabaseAdmin()
+    .from("gpx_files")
+    .update({ track_name: trackName })
+    .eq("id", id)
+    .eq("user_id", userId)
+    .select(METADATA_COLUMNS)
+    .single();
+  if (error) throw error;
+  return (data as unknown as GpxFileMeta) ?? null;
+}
+
 export async function setShareForUserFile(
   userId: string,
   id: string,

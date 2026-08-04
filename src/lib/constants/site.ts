@@ -10,7 +10,7 @@ export const SITE_DESCRIPTION =
 export const AUTHOR_NAME = "Aitor Sánchez Gutiérrez";
 export const AUTHOR_BLOG_URL = "https://aitorsanchez.pages.dev";
 export const AUTHOR_HUB_URL = "https://aitorhub.vercel.app";
-export const AUTHOR_CONTACT_URL = "https://aitor-blog-contacto.vercel.app";
+export const AUTHOR_CONTACT_URL = "https://aitorsanchez.pages.dev/contacto";
 /** URL de contacto usada específicamente en el structured data (JSON-LD) */
 export const AUTHOR_CONTACT_JSONLD_URL = "https://aitorsanchez.pages.dev/contacto";
 

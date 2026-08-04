@@ -1,8 +1,9 @@
 import { Mail, Rss, LayoutGrid, Info } from "lucide-react";
+import { AUTHOR_CONTACT_URL } from "@/lib/constants/site";
 
 const LINKS = [
   { label: "Acerca de", href: "/acerca-de", icon: Info },
-  { label: "Contacto", href: "https://aitor-blog-contacto.vercel.app", icon: Mail },
+  { label: "Contacto", href: AUTHOR_CONTACT_URL, icon: Mail },
   { label: "Blog", href: "https://aitorsanchez.pages.dev", icon: Rss },
   { label: "Más apps", href: "https://aitorhub.vercel.app", icon: LayoutGrid },
 ];
