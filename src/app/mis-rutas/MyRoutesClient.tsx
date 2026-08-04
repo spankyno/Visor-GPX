@@ -86,12 +86,24 @@ export function MyRoutesClient({ initialFiles, plan }: MyRoutesClientProps) {
     setBusyId(id);
     setErrorLocal(null);
     try {
-      const res = await fetch(`/api/gpx/${id}`);
+      const res = await fetch(`/api/gpx/${id}`, { cache: "no-store" });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "No se pudo cargar la ruta.");
       const track = parseGpxString(data.file.content, data.file.file_name);
+      // El GPX puede traer su propio <name> interno; si el usuario ha
+      // renombrado la ruta desde "Mis rutas", ese nombre (track_name) debe
+      // prevalecer sobre el que venga dentro del archivo.
+      if (data.file.track_name) track.name = data.file.track_name;
       track.remoteId = data.file.id;
       track.shareToken = data.file.share_token;
+
+      // Si esta misma ruta (por remoteId) ya estaba cargada en el visor de
+      // una navegación anterior en esta misma pestaña, la quitamos primero
+      // para que no quede una copia vieja con el nombre antiguo.
+      const { tracks, removeTrack } = useTracksStore.getState();
+      const stale = tracks.find((t) => t.remoteId === track.remoteId);
+      if (stale) removeTrack(stale.id);
+
       addTracks([track]);
       router.push("/");
     } catch (err) {
