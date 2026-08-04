@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import { ClerkProvider } from "@clerk/nextjs";
+import { dark } from "@clerk/themes";
 import { esES } from "@clerk/localizations";
 import { Fraunces, JetBrains_Mono, Manrope } from "next/font/google";
 import { ServiceWorkerRegister } from "@/components/layout/ServiceWorkerRegister";
@@ -112,13 +113,29 @@ export default function RootLayout({
     <ClerkProvider
       localization={esES}
       appearance={{
+        baseTheme: dark,
         variables: {
           colorPrimary: "#f59e0b",
           colorBackground: "#0a0a0a",
           colorInputBackground: "#171717",
-          colorText: "#e5e5e5",
+          colorInputText: "#f5f5f5",
+          colorText: "#f5f5f5",
           colorTextSecondary: "#a3a3a3",
+          colorNeutral: "#e5e5e5",
+          colorBorder: "#262626",
           borderRadius: "0.75rem",
+        },
+        elements: {
+          // El menú del avatar (UserButton) y sus opciones (p.ej. "Cerrar
+          // sesión") usan colorBackground/colorText de arriba, pero se fija
+          // aquí también el borde para que no se confunda con el fondo de
+          // la página.
+          userButtonPopoverCard: {
+            border: "1px solid #262626",
+          },
+          card: {
+            border: "1px solid #262626",
+          },
         },
       }}
     >
