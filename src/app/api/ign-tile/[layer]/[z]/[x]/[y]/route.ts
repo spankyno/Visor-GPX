@@ -40,11 +40,27 @@ export async function GET(
     return new NextResponse("Capa IGN desconocida", { status: 404 });
   }
 
+  // z/x/y llegan como segmentos de ruta controlados por quien haga la
+  // petición: se validan como enteros no negativos y en rangos razonables
+  // de un esquema de teselas antes de interpolarlos en la URL de origen.
+  // Sin esto, un valor como "1&layer=otra-cosa" podría inyectar parámetros
+  // adicionales en la petición GetTile hacia el IGN.
+  if (![z, x, y].every((v) => /^\d{1,8}$/.test(v))) {
+    return new NextResponse("Coordenadas de tesela inválidas", { status: 400 });
+  }
+  const zNum = Number(z);
+  const xNum = Number(x);
+  const yNum = Number(y);
+  const maxIndex = 2 ** zNum;
+  if (zNum > 22 || xNum >= maxIndex || yNum >= maxIndex) {
+    return new NextResponse("Coordenadas de tesela fuera de rango", { status: 400 });
+  }
+
   const upstreamUrl =
     `${config.endpoint}?service=WMTS&request=GetTile&version=1.0.0` +
     `&layer=${encodeURIComponent(config.layer)}&style=default` +
     `&format=${encodeURIComponent(config.format)}&tilematrixset=GoogleMapsCompatible` +
-    `&tilematrix=${z}&tilerow=${y}&tilecol=${x}`;
+    `&tilematrix=${zNum}&tilerow=${yNum}&tilecol=${xNum}`;
 
   try {
     const upstream = await fetch(upstreamUrl, {

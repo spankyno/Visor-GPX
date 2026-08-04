@@ -12,11 +12,15 @@ export async function GET(_req: Request, { params }: Params) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: "No autenticado" }, { status: 401 });
 
-  const { id } = await params;
-  const file = await getUserFile(user.userId, id);
-  if (!file) return NextResponse.json({ error: "No encontrado" }, { status: 404 });
+  try {
+    const { id } = await params;
+    const file = await getUserFile(user.userId, id);
+    if (!file) return NextResponse.json({ error: "No encontrado" }, { status: 404 });
 
-  return NextResponse.json({ file });
+    return NextResponse.json({ file });
+  } catch {
+    return NextResponse.json({ error: "No se pudo cargar la ruta." }, { status: 500 });
+  }
 }
 
 export async function PATCH(req: Request, { params }: Params) {
@@ -24,8 +28,6 @@ export async function PATCH(req: Request, { params }: Params) {
   if (!user) return NextResponse.json({ error: "No autenticado" }, { status: 401 });
 
   const { id } = await params;
-  const existing = await getUserFile(user.userId, id);
-  if (!existing) return NextResponse.json({ error: "No encontrado" }, { status: 404 });
 
   const body = await req.json().catch(() => null);
   const trackName = typeof body?.trackName === "string" ? body.trackName.trim() : "";
@@ -40,15 +42,26 @@ export async function PATCH(req: Request, { params }: Params) {
     );
   }
 
-  const file = await renameUserFile(user.userId, id, trackName);
-  return NextResponse.json({ file });
+  try {
+    const existing = await getUserFile(user.userId, id);
+    if (!existing) return NextResponse.json({ error: "No encontrado" }, { status: 404 });
+
+    const file = await renameUserFile(user.userId, id, trackName);
+    return NextResponse.json({ file });
+  } catch {
+    return NextResponse.json({ error: "No se pudo renombrar la ruta." }, { status: 500 });
+  }
 }
 
 export async function DELETE(_req: Request, { params }: Params) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: "No autenticado" }, { status: 401 });
 
-  const { id } = await params;
-  await deleteUserFile(user.userId, id);
-  return NextResponse.json({ ok: true });
+  try {
+    const { id } = await params;
+    await deleteUserFile(user.userId, id);
+    return NextResponse.json({ ok: true });
+  } catch {
+    return NextResponse.json({ error: "No se pudo borrar la ruta." }, { status: 500 });
+  }
 }

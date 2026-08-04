@@ -21,22 +21,30 @@ export async function POST(_req: Request, { params }: Params) {
     );
   }
 
-  const { id } = await params;
-  const existing = await getUserFile(user.userId, id);
-  if (!existing) return NextResponse.json({ error: "No encontrado" }, { status: 404 });
+  try {
+    const { id } = await params;
+    const existing = await getUserFile(user.userId, id);
+    if (!existing) return NextResponse.json({ error: "No encontrado" }, { status: 404 });
 
-  const file = await setShareForUserFile(user.userId, id, true);
-  return NextResponse.json({ file });
+    const file = await setShareForUserFile(user.userId, id, true);
+    return NextResponse.json({ file });
+  } catch {
+    return NextResponse.json({ error: "No se pudo activar la compartición." }, { status: 500 });
+  }
 }
 
 export async function DELETE(_req: Request, { params }: Params) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: "No autenticado" }, { status: 401 });
 
-  const { id } = await params;
-  const existing = await getUserFile(user.userId, id);
-  if (!existing) return NextResponse.json({ error: "No encontrado" }, { status: 404 });
+  try {
+    const { id } = await params;
+    const existing = await getUserFile(user.userId, id);
+    if (!existing) return NextResponse.json({ error: "No encontrado" }, { status: 404 });
 
-  const file = await setShareForUserFile(user.userId, id, false);
-  return NextResponse.json({ file });
+    const file = await setShareForUserFile(user.userId, id, false);
+    return NextResponse.json({ file });
+  } catch {
+    return NextResponse.json({ error: "No se pudo desactivar la compartición." }, { status: 500 });
+  }
 }
